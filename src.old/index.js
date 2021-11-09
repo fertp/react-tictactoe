@@ -1,54 +1,57 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
+// import App from './App';
+import reportWebVitals from './reportWebVitals';
 
-const Square = (props) => {
-  return (
-    <button className="square" onClick={ props.onClick } >
-      {props.value}
-    </button>
-  );
+class Square extends React.Component {
+  
+  // constructor(props) {
+  //   super(props);
+  //   this.state = {
+  //     value: this.props.value,
+  //   };
+  // }
+
+  render() {
+    return (
+      <button className="square" 
+        onClick={ () => this.props.onClick() }>
+        { this.props.value }
+      </button>
+    );
+  }
 }
 
 class Board extends React.Component {
 
   constructor(props) {
-    super(props);
+    super(props)
     this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true
+      squares: Array(9).fill(1),
+      xIsNext: true,
     }
   }
 
-  handleClick(i) {
+  handleClick(i){
     const squares = this.state.squares.slice();
-    if ( calculateWinner(squares) || squares[i] ) {
-      return;
-    }
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({ 
-      squares: squares,
-      xIsNext: !this.state.xIsNext
-     });
+    squares[i] = 'X';
+    this.setState({
+      squares: squares
+    })
   }
 
   renderSquare(i) {
     return (
       <Square 
         value={ this.state.squares[i] } 
-        onClick={ () => this.handleClick(i) }
+        onClick={ this.handleClick(i) }    
       />
     );
   }
 
   render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-    if (winner) {
-      status = 'Winner ' + winner;
-    } else {
-      status = 'Next player: ' + ( this.state.xIsNext ? 'X' : 'O' );
-    }
+    const status = 'Next player: X';
 
     return (
       <div>
@@ -96,22 +99,15 @@ ReactDOM.render(
   document.getElementById('root')
 );
 
-function calculateWinner(squares) {
-  const lines = [
-    [0, 1, 2],
-    [3, 4, 5],
-    [6, 7, 8],
-    [0, 3, 6],
-    [1, 4, 7],
-    [2, 5, 8],
-    [0, 4, 8],
-    [2, 4, 6],
-  ];
-  for (let i = 0; i < lines.length; i++) {
-    const [a, b, c] = lines[i];
-    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-      return squares[a];
-    }
-  }
-  return null;
-}
+
+// ReactDOM.render(
+//   <React.StrictMode>
+//     <App />
+//   </React.StrictMode>,
+//   document.getElementById('root')
+// );
+
+// If you want to start measuring performance in your app, pass a function
+// to log results (for example: reportWebVitals(console.log))
+// or send to an analytics endpoint. Learn more: https://bit.ly/CRA-vitals
+reportWebVitals();
