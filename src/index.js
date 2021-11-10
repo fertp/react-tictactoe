@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
@@ -10,83 +10,100 @@ const Square = (props) => {
   );
 }
 
-class Board extends React.Component {
+const Board = ({ squares, onClick }) => {
 
-  constructor(props) {
-    super(props);
-    this.state = {
-      squares: Array(9).fill(null),
-      xIsNext: true
-    }
-  }
-
-  handleClick(i) {
-    const squares = this.state.squares.slice();
-    if ( calculateWinner(squares) || squares[i] ) {
-      return;
-    }
-    squares[i] = this.state.xIsNext ? 'X' : 'O';
-    this.setState({ 
-      squares: squares,
-      xIsNext: !this.state.xIsNext
-     });
-  }
-
-  renderSquare(i) {
+  const renderSquare = (i) => {
     return (
       <Square 
-        value={ this.state.squares[i] } 
-        onClick={ () => this.handleClick(i) }
+        value={ squares[i] } 
+        onClick={ () => onClick(i) }
       />
     );
   }
 
-  render() {
-    const winner = calculateWinner(this.state.squares);
-    let status;
-    if (winner) {
-      status = 'Winner ' + winner;
-    } else {
-      status = 'Next player: ' + ( this.state.xIsNext ? 'X' : 'O' );
-    }
-
-    return (
-      <div>
-        <div className="status">{status}</div>
-        <div className="board-row">
-          {this.renderSquare(0)}
-          {this.renderSquare(1)}
-          {this.renderSquare(2)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(3)}
-          {this.renderSquare(4)}
-          {this.renderSquare(5)}
-        </div>
-        <div className="board-row">
-          {this.renderSquare(6)}
-          {this.renderSquare(7)}
-          {this.renderSquare(8)}
-        </div>
+  return (
+    <div>
+      <div className="board-row">
+        {renderSquare(0)}
+        {renderSquare(1)}
+        {renderSquare(2)}
       </div>
-    );
-  }
+      <div className="board-row">
+        {renderSquare(3)}
+        {renderSquare(4)}
+        {renderSquare(5)}
+      </div>
+      <div className="board-row">
+        {renderSquare(6)}
+        {renderSquare(7)}
+        {renderSquare(8)}
+      </div>
+    </div>
+  );
 }
 
-class Game extends React.Component {
-  render() {
-    return (
-      <div className="game">
-        <div className="game-board">
-          <Board />
-        </div>
-        <div className="game-info">
-          <div>{/* status */}</div>
-          <ol>{/* TODO */}</ol>
-        </div>
-      </div>
-    );
+const Game = (props) => {
+
+  const [history, setHistory] = useState([{ squares: Array(9).fill(null) }]);
+  const [stepNumber, setstepNumber] = useState(0);
+  const [xIsNext, setXIsNext] = useState(true)
+
+  const handleClick = (i) => {
+    const localHistory = history.slice(0, stepNumber + 1);
+    const current = localHistory[localHistory.length - 1];
+    const squares = current.squares.slice();
+    if ( calculateWinner(squares) || squares[i] ) {
+      return;
+    }
+    squares[i] = xIsNext ? 'X' : 'O';
+    setHistory([ ...localHistory, { squares }]);
+    setstepNumber(localHistory.length);
+    setXIsNext(!xIsNext);
   }
+
+  const jumpTo = (step) => {
+    setstepNumber(step);
+    setXIsNext((step % 2) === 0);
+  }
+
+  
+  const localHistory = history;
+  const current = localHistory[stepNumber];
+  const winner = calculateWinner(current.squares);
+
+  const moves = localHistory.map((step, move) => {
+    const desc = move ?
+      'Go to move #' + move :
+      'Go to game start';
+    return (
+      <li key={move}>
+        <button onClick={() => jumpTo(move)} >{desc}</button>
+      </li>
+    );
+  });
+
+  let status;
+  if (winner) {
+    status = 'Winner ' + winner;
+  } else {
+    status = 'Next player: ' + ( xIsNext ? 'X' : 'O' );
+  }
+
+  return (
+    <div className="game">
+      <div className="game-board">
+        <Board 
+          squares={ current.squares }
+          onClick={ (i) => handleClick(i) }
+        />
+      </div>
+      <div className="game-info">
+        <div>{ status }</div>
+        <ol>{moves}</ol>
+      </div>
+    </div>
+  );
+  
 }
 
 // ========================================
